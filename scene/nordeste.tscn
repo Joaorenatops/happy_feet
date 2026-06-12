@@ -1,0 +1,55 @@
+[gd_scene format=4 uid="uid://cuj6fpyhsut46"]
+
+[ext_resource type="PackedScene" uid="uid://cqixkwxesse3m" path="res://entidades/player.tscn" id="1_mdywq"]
+[ext_resource type="PackedScene" uid="uid://bb8tk78vy8kha" path="res://entidades/camera.tscn" id="2_asisd"]
+[ext_resource type="Texture2D" uid="uid://dwmm8ut440j5y" path="res://sprites/Nordeste/sky.png" id="3_6ery2"]
+[ext_resource type="Texture2D" uid="uid://ffh478aopfil" path="res://sprites/Nordeste/Gemini_Generated_Image_q6d6txq6d6txq6d6 (1).png" id="4_asisd"]
+[ext_resource type="TileSet" uid="uid://dhdq426wjqoer" path="res://tiles/terrain.tres" id="4_mdywq"]
+
+[node name="Nordeste" type="Node2D" unique_id=1550263002]
+
+[node name="Player" parent="." unique_id=1964822658 instance=ExtResource("1_mdywq")]
+position = Vector2(205, 156)
+
+[node name="Camera" parent="." unique_id=1835069838 instance=ExtResource("2_asisd")]
+position = Vector2(201, 157)
+
+[node name="ParallaxBackground" type="ParallaxBackground" parent="." unique_id=874385543]
+
+[node name="3" type="ParallaxLayer" parent="ParallaxBackground" unique_id=961161296]
+motion_mirroring = Vector2(288, 0)
+
+[node name="Sprite2D" type="Sprite2D" parent="ParallaxBackground/3" unique_id=124128770]
+texture_repeat = 2
+position = Vector2(1, 1)
+texture = ExtResource("3_6ery2")
+centered = false
+region_enabled = true
+region_rect = Rect2(0, 0, 288, 208)
+
+[node name="4" type="ParallaxLayer" parent="ParallaxBackground" unique_id=1977337739]
+z_index = 1
+motion_mirroring = Vector2(288, 0)
+
+[node name="Sprite2D" type="Sprite2D" parent="ParallaxBackground/4" unique_id=2043231805]
+texture_repeat = 2
+position = Vector2(1, 1)
+texture = ExtResource("4_asisd")
+centered = false
+region_enabled = true
+region_rect = Rect2(0, 0, 288, 208)
+
+[node name="5" type="ParallaxLayer" parent="ParallaxBackground" unique_id=1184429748]
+motion_mirroring = Vector2(288, 0)
+
+[node name="Sprite2D" type="Sprite2D" parent="ParallaxBackground/5" unique_id=481860276]
+texture_repeat = 2
+position = Vector2(1, 1)
+texture = ExtResource("3_6ery2")
+centered = false
+region_enabled = true
+region_rect = Rect2(0, 0, 288, 208)
+
+[node name="TileMapLayer" type="TileMapLayer" parent="." unique_id=349880018]
+tile_map_data = PackedByteArray("AAAAAAwAAgADAAEAAAABAAwAAgAEAAEAAAACAAwAAgAFAAEAAAADAAwAAgADAAEAAAAEAAwAAgAEAAEAAAAFAAwAAgAFAAEAAAAGAAwAAgADAAEAAAAHAAwAAgAEAAEAAAAIAAwAAgAFAAEAAAAJAAwAAgADAAEAAAAKAAwAAgAEAAEAAAALAAwAAgADAAEAAAAMAAwAAgAEAAEAAAANAAwAAgAFAAEAAAAOAAwAAgADAAEAAAAPAAwAAgADAAEAAAAQAAwAAgAEAAEAAAARAAwAAgAFAAEAAAASAAwAAgADAAEAAAATAAwAAgADAAEAAAAUAAwAAgAEAAEAAAAVAAwAAgAFAAEAAAAWAAwAAgADAAEAAAAXAAwAAgAEAAEAAAAYAAwAAgAFAAEAAAAZAAwAAgADAAEAAAAaAAwAAgAEAAEAAAAbAAwAAgAFAAEAAAAcAAwAAgADAAEAAAAdAAwAAgAEAAEAAAAeAAwAAgAFAAEAAAAfAAwAAgADAAEAAAAgAAwAAgAEAAEAAAAhAAwAAgAFAAEAAAAiAAwAAgADAAEAAAAjAAwAAgAEAAEAAAAkAAwAAgAFAAEAAAA=")
+tile_set = ExtResource("4_mdywq")
