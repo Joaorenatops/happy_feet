@@ -147,6 +147,7 @@ tile_set = SubResource("TileSet_64es3")
 
 [node name="levelend" parent="." unique_id=1215576994 instance=ExtResource("11_gwku7")]
 position = Vector2(710, 180)
+next_level = "tropic"
 
 [node name="CollisionShape2D" parent="levelend" index="0" unique_id=2065031227]
 position = Vector2(4.5, -72.5)

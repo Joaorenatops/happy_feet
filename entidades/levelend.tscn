@@ -8,6 +8,7 @@
 collision_layer = 8
 collision_mask = 2
 script = ExtResource("1_0ip26")
+next_level = "tropic"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=2065031227]
 shape = SubResource("RectangleShape2D_0djik")
