@@ -4,15 +4,30 @@ enum PlayerState {
 	idle,
 	walk,
 	jump,
-	duck
+	fall,
+	duck,
+	slide,
+	hurt
 }
 
 @onready var anim: AnimatedSprite2D = $AnimatedSprite2D
+@onready var collision_shape_2d: CollisionShape2D = $CollisionShape2D
+@onready var hitbox_collision_shape: CollisionShape2D = $Hitbox/CollisionShape2D
+
+@onready var reload_timer: Timer = $ReloadTimer
 
 const SPEED = 80.0
+@export var max_speed = 180.0
+@export var acceleration = 400
+@export var desceleration = 400
+@export var slide_deceleration = 100
 const JUMP_VELOCITY = -300.0
+
+var jump_count = 0
+@export var max_jump_count = 2
 var direction = 0
 var status: PlayerState
+
 
 func _ready() -> void:
 	go_to_idle_state()
@@ -24,13 +39,19 @@ func _physics_process(delta: float) -> void:
 		
 	match status:
 		PlayerState.idle:
-			idle_state()
+			idle_state(delta)
 		PlayerState.walk:
-			walk_state()
+			walk_state(delta)
 		PlayerState.jump:
-			jump_state()
+			jump_state(delta)
+		PlayerState.fall:
+			fall_state(delta)
 		PlayerState.duck:
-			duck_state()
+			duck_state(delta)
+		PlayerState.slide:
+			slide_state(delta)
+		PlayerState.hurt:
+			pass
 			
 	move_and_slide()
 			
@@ -46,21 +67,37 @@ func go_to_jump_state():
 	status = PlayerState.jump
 	anim.play("jump")
 	velocity.y = JUMP_VELOCITY
+	jump_count += 1
+	
+func go_to_fall_state():
+	status = PlayerState.fall
+	anim.play("fall")
 	
 func go_to_duck_state():
 	status = PlayerState.duck
 	anim.play("duck")
-	CollisionShape2D.shape.radius = 5
-	CollisionShape2D.shape.height = 5
-	CollisionShape2D.shape.position.y = 3
+	set_small_collider()
 	
 func exit_from_duck_state():
-	CollisionShape2D.shape.radius = 5
-	CollisionShape2D.shape.height = 10
-	CollisionShape2D.shape.position.y = 3
+	set_large_collider()
+
+func go_to_slide_state():
+	status = PlayerState.slide
+	anim.play("slide")
+	set_small_collider()
 	
-func idle_state():
-	move()
+func exit_from_slide_state():
+	set_large_collider()
+	
+func go_to_hurt_state():
+	status = PlayerState.hurt
+	anim.play("hurt")
+	velocity.x = 0
+	reload_timer.start()
+	
+	
+func idle_state(delta):
+	move(delta)
 	if velocity.x != 0:
 		go_to_walk_state()
 		return
@@ -72,9 +109,9 @@ func idle_state():
 	if Input.is_action_pressed("duck"):
 		go_to_duck_state()
 		return
-		
-func walk_state():
-	move()
+
+func walk_state(delta):
+	move(delta)
 	if velocity.x == 0:
 		go_to_idle_state()
 		return
@@ -82,30 +119,72 @@ func walk_state():
 	if Input.is_action_just_pressed("jump"):
 		go_to_jump_state()
 		return
+		
+	if Input.is_action_just_pressed("duck"):
+		go_to_slide_state()
+		return
 	
-func jump_state():
-	move()
+	if !is_on_floor():
+		jump_count += 1
+		go_to_fall_state()
+		return
+	
+func jump_state(delta):
+	move(delta)
+	
+	if Input.is_action_just_pressed("jump") and can_jump():
+		go_to_jump_state()
+		return
+	
+	if velocity.y > 0:
+		go_to_fall_state()
+		return
+	
+	
+func fall_state(delta):
+	move(delta)
+	if Input.is_action_just_pressed("jump") && can_jump():
+		go_to_jump_state()
+		return
+	
 	if is_on_floor():
+		jump_count = 0
 		if velocity.x == 0:
 			go_to_idle_state()
 		else:
 			go_to_walk_state()
 		return
-func duck_state():
-	update_direction() # Alterado: Adicionado para atualizar o lado do sprite
+	
+func duck_state(_delta):
+	update_direction()
 	
 	if Input.is_action_just_released("duck"):
 		exit_from_duck_state()
 		go_to_idle_state()
 		return
+		
+func slide_state(delta):
+	velocity.x = move_toward(velocity.x, 0, slide_deceleration * delta)
+	if Input.is_action_just_released("duck"):
+		exit_from_slide_state()
+		go_to_walk_state()
+		return
 	
-func move():
+	if velocity.x == 0:
+		exit_from_slide_state()
+		go_to_duck_state()
+		return
+		
+func hurt_state(_delta):
+	pass
+
+func move(delta):
 	update_direction()
 	if direction:
-		velocity.x = direction * SPEED
+		velocity.x = move_toward(velocity.x,direction * max_speed, acceleration * delta)
 	else:
-		velocity.x = move_toward(velocity.x, 0, SPEED)
-		
+		velocity.x = move_toward(velocity.x, 0, desceleration * delta)
+
 func update_direction():
 	direction = Input.get_axis("left", "right")
 	
@@ -113,46 +192,43 @@ func update_direction():
 		anim.flip_h = true
 	elif direction > 0:
 		anim.flip_h = false
+		
+func can_jump() -> bool:
+	return jump_count < max_jump_count
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-func temp(delta: float) -> void:
-	# Add the gravity.
-	if not is_on_floor():
-		velocity += get_gravity() * delta
-
-	# Handle jump.
-	if Input.is_action_just_pressed("jump") and is_on_floor():
-		velocity.y = JUMP_VELOCITY
-
-	# Get the input direction and handle the movement/deceleration.
-	# As good practice, you should replace UI actions with custom gameplay actions.
-	var direction := Input.get_axis("left", "right")
-	if direction:
-		velocity.x = direction * SPEED
-	else:
-		velocity.x = move_toward(velocity.x, 0, SPEED)
+func set_small_collider():
+	$CollisionShape2D.shape.radius = 5
+	$CollisionShape2D.shape.height = 5
+	$CollisionShape2D.position.y = 3
 	
+	hitbox_collision_shape.shape.size.y = 5
+	hitbox_collision_shape.position.y = 3
+
+func set_large_collider():
+	$CollisionShape2D.shape.radius = 5
+	$CollisionShape2D.shape.height = 10
+	$CollisionShape2D.position.y = 3
+	
+	hitbox_collision_shape.shape.size.y = 10
+	hitbox_collision_shape.position.y = 5
+
+
+func _on_hitbox_area_entered(area: Area2D) -> void:
+	if area.is_in_group("Enemies"):
+		hit_enemy(area)
+	elif area.is_in_group("LethalArea"):
+		hit_lethal_area()
+
+func hit_enemy(area: Area2D):
+	if velocity.y > 0:
+		area.get_parent().take_demage()
+		go_to_jump_state()
+	else:
+		if status != PlayerState.hurt:
+			go_to_hurt_state()
+			
+func hit_lethal_area():
+	go_to_hurt_state()
+
+func _on_reload_timer_timeout() -> void:
+	get_tree().reload_current_scene()
